@@ -1,0 +1,266 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Mar 16 06:09:43 2022
+
+Project: Easy Rider Bus Company
+
+Stage 1/6: Checking the data type
+
+Description
+
+You just started sorting out the existing database of the "Easy Rider" bus 
+company. As you take the first look at the data, you realize that it's not 
+going to be easy.
+
+Sometimes numbers are missing from where they should definitely be. You also 
+noticed that sometimes there are too many or too few characters. Fortunately, 
+there is documentation to help you sort out this mess. However, this 
+documentation is not a hundred percent complete: part of it was torn away when 
+your colleague spilled coffee on it. Let's see what we can make out.
+
+Here are the documents that you have: documentation and diagram of the bus 
+lines.
+
+Objectives
+
+1. The string containing the data in JSON format is passed to standard input.
+2. Check that the data types match.
+3. Check that the required fields are filled in.
+4. Display the information about the number of found errors in total and in 
+   each field.
+5. The output should have the same formatting as shown in the example.
+
+If you can't find the necessary information in the stage description, it can 
+probably be found in the attached documentation.
+
+Note that the type "Char" is present among the data types.
+
+Example:
+    
+Input:
+
+[
+    {
+        "bus_id": 128,
+        "stop_id": 1,
+        "stop_name": "Prospekt Avenue",
+        "next_stop": 3,
+        "stop_type": "S",
+        "a_time": 8.12
+    },
+    {
+        "bus_id": 128,
+        "stop_id": 3,
+        "stop_name": "",
+        "next_stop": 5,
+        "stop_type": "",
+        "a_time": "08:19"
+    },
+    {
+        "bus_id": 128,
+        "stop_id": 5,
+        "stop_name": "Fifth Avenue",
+        "next_stop": 7,
+        "stop_type": "O",
+        "a_time": "08:25"
+    },
+    {
+        "bus_id": 128,
+        "stop_id": "7",
+        "stop_name": "Sesame Street",
+        "next_stop": 0,
+        "stop_type": "F",
+        "a_time": "08:37"
+    },
+    {
+        "bus_id": "",
+        "stop_id": 2,
+        "stop_name": "Pilotow Street",
+        "next_stop": 3,
+        "stop_type": "S",
+        "a_time": ""
+    },
+    {
+        "bus_id": 256,
+        "stop_id": 3,
+        "stop_name": "Elm Street",
+        "next_stop": 6,
+        "stop_type": "",
+        "a_time": "09:45"
+    },
+    {
+        "bus_id": 256,
+        "stop_id": 6,
+        "stop_name": "Sunset Boulevard",
+        "next_stop": 7,
+        "stop_type": "",
+        "a_time": "09:59"
+    },
+    {
+        "bus_id": 256,
+        "stop_id": 7,
+        "stop_name": "Sesame Street",
+        "next_stop": "0",
+        "stop_type": "F",
+        "a_time": "10:12"
+    },
+    {
+        "bus_id": 512,
+        "stop_id": 4,
+        "stop_name": "Bourbon Street",
+        "next_stop": 6,
+        "stop_type": "S",
+        "a_time": "08:13"
+    },
+    {
+        "bus_id": "512",
+        "stop_id": 6,
+        "stop_name": "Sunset Boulevard",
+        "next_stop": 0,
+        "stop_type": 5,
+        "a_time": "08:16"
+    }
+]
+
+Output:
+
+Type and required field validation: 8 errors
+bus_id: 2
+stop_id: 1
+stop_name: 1
+next_stop: 1
+stop_type: 1
+a_time: 2
+
+
+"""
+import json
+import re
+
+
+bus_lines = json.loads(input('> '))
+
+db_format = {'a_time': {'type': 'str', 'req': True, 'order': 5, 'format': '^\d\d:\d\d$'},
+              'bus_id': {'type': 1, 'req': True, 'order': 0, 'format': ''},
+              'next_stop': {'type': 1, 'req': True, 'order': 3, 'format': ''},
+              'stop_id': {'type': 1, 'req': True, 'order': 1, 'format': ''},
+              'stop_name': {'type': 'str', 'req': True, 'order': 2, 'format': '^[a-zA-Z].*$'},
+              'stop_type': {'type': 'str', 'req': False, 'order': 4, 'format': '^[ SOF]$'}}
+
+db_errors = {key: 0 for key in db_format.keys()}
+for stop in bus_lines:
+    # print(f'\nStop: {stop}\n')
+    for key in db_format:
+        if type(stop[key]) != type(db_format[key]['type']):
+            # print(f'Key: {key} wrong type: {type(stop[key])}')
+            db_errors[key] += 1
+        elif isinstance(stop[key], int):  # no requirements for integers
+            pass
+        elif db_format[key]['req'] and not stop[key]:  # Missing required field
+            # print(f'Key: {key} missing required value')
+            db_errors[key] += 1
+        else:  # Check string field formats
+            print(f'Key: {key}, Value [{stop[key]}]')
+            # print('Key: {}, Value: {}, Format Check: {}'.format(key, stop[key], db_format[key]['format']))
+            # if db_format[key]['req'] and re.search(db_format[key]['format'],stop[key]):
+            # If there is no value or, if there is, the format is right
+            # if not stop[key] or re.search(db_format[key]['format'], stop[key]):
+            #     pass  # criteria met
+            #     # print('Match')
+            # else:  # There is a value in the wrong format
+            #     print('Key: {}, Value: {}, Format Check: {}'.format(key, stop[key], db_format[key]['format']))
+            #     print('No match')
+            #     db_errors[key] += 1
+            #     error_count += 1
+            if not (not stop[key] or re.search(db_format[key]['format'], stop[key])):
+                print('Key: {}, Value: {}, Format Check: {}'.format(key, stop[key], db_format[key]['format']))
+                print('No match')
+                db_errors[key] += 1
+
+print(f'Type and required field validation: {sum([x for x in db_errors.values()])} errors')
+# print('\n'.join([f'{key}: {value}' for key, value in db_errors.items()]))
+print('\n'.join([f'{key}: {value}' for key, value in sorted(db_errors.items(), key=lambda x: (db_format[x[0]]['order']))]))
+
+#%%
+for x in bus_lines:
+    print(x['stop_type'], type(x['stop_type']))
+#%%
+# Chuka Mbakwe
+
+import json
+
+
+err_list = {"bus_error": 0, "stop_id_error": 0, "stop_name_error": 0, "next_stop_error": 0, "stop_type_error": 0, "a_time_error": 0}
+
+bus_pass = json.loads(input())
+
+for item in bus_pass:
+    if not isinstance(item['bus_id'], int) or item['bus_id'] == '':
+        err_list['bus_error'] += 1
+    if not isinstance(item['stop_id'], int) or item['stop_id'] == '':
+        err_list['stop_id_error'] += 1
+    if not isinstance(item['stop_name'], str) or item['stop_name'] == '':
+        err_list['stop_name_error'] += 1
+    if not isinstance(item['next_stop'], int) or item['next_stop'] == '':
+        err_list['next_stop_error'] += 1
+    if not isinstance(item['stop_type'], str) or len(str(item['stop_type'])) > 1:
+        err_list['stop_type_error'] += 1
+    if not isinstance(item['a_time'], str) or item['a_time'] == '':
+        err_list['a_time_error'] += 1
+
+total_errors = sum(err_list.values())
+print(f"Type and required field validation: {total_errors}")
+for key, value in err_list.items():
+    print(f"{key}: {value}")
+
+
+#%%
+"""
+[{"bus_id" : 128, "stop_id" : 1, "stop_name" : "Prospekt Avenue", "next_stop" : 3, "stop_type" : "S", "a_time" : 8.12}, 
+ {"bus_id" : 128, "stop_id" : 3, "stop_name" : "", "next_stop" : 5, "stop_type" : "", "a_time" : "08:19"}, 
+ {"bus_id" : 128, "stop_id" : 5, "stop_name" : "Fifth Avenue", "next_stop" : 7, "stop_type" : "O", "a_time" : "08:25"}, 
+ {"bus_id" : 128, "stop_id" : "7", "stop_name" : "Sesame Street", "next_stop" : 0, "stop_type" : "F", "a_time" : "08:37"}, 
+ {"bus_id" : "", "stop_id" : 2, "stop_name" : "Pilotow Street", "next_stop" : 3, "stop_type" : "S", "a_time" : ""}, 
+ {"bus_id" : 256, "stop_id" : 3, "stop_name" : "Elm Street", "next_stop" : 6, "stop_type" : "", "a_time" : "09:45"}, 
+ {"bus_id" : 256, "stop_id" : 6, "stop_name" : "Sunset Boulevard", "next_stop" : 7, "stop_type" : "", "a_time" : "09:59"}, 
+ {"bus_id" : 256, "stop_id" : 7, "stop_name" : "Sesame Street", "next_stop" : "0", "stop_type" : "F", "a_time" : "10:12"}, 
+ {"bus_id" : 512, "stop_id" : 4, "stop_name" : "Bourbon Street", "next_stop" : 6, "stop_type" : "S", "a_time" : "08:13"}, 
+ {"bus_id" : "512", "stop_id" : 6, "stop_name" : "Sunset Boulevard", "next_stop" : 0, "stop_type" : 5, "a_time" : "08:16"}
+ ]
+"""
+#%%
+"""
+[
+ {"bus_id" : 128, "stop_id" : 1, "stop_name" : "Fifth Avenue", "next_stop" : 4, "stop_type" : "S", "a_time" : "08:12"}, 
+ {"bus_id" : 128, "stop_id" : 4, "stop_name" : "abbey Road", "next_stop" : 5, "stop_type" : "", "a_time" : "08:19"}, 
+ {"bus_id" : 128, "stop_id" : 5, "stop_name" : "Santa Monica Boulevard", "next_stop" : 8, "stop_type" : "O", "a_time" : "08:25"}, 
+ {"bus_id" : 128, "stop_id" : 8, "stop_name" : "Elm Street Str.", "next_stop" : "11", "stop_type" : "", "a_time" : "08:37"}, 
+ {"bus_id" : 128, "stop_id" : 11, "stop_name" : "Beale Street", "next_stop" : 12, "stop_type" : "", "a_time" : "09:20"}, 
+ {"bus_id" : 128, "stop_id" : 12, "stop_name" : 9, "next_stop" : 14, "stop_type" : "", "a_time" : "09:45"}, 
+ {"bus_id" : 128, "stop_id" : "five", "stop_name" : "Bourbon street", "next_stop" : 19, "stop_type" : "O", "a_time" : "09:59"}, 
+ {"bus_id" : 128, "stop_id" : 19, "stop_name" : "", "next_stop" : 0, "stop_type" : "F", "a_time" : "10:12"}, 
+ {"bus_id" : 256, "stop_id" : 2, "stop_name" : "Pilotow Street", "next_stop" : 3, "stop_type" : "S", "a_time" : "08:13"}, 
+ {"bus_id" : "", "stop_id" : "", "stop_name" : "Startowa Street", "next_stop" : 8, "stop_type" : 23.9, "a_time" : 8}, 
+ {"bus_id" : 256, "stop_id" : 8, "stop_name" : "Elm", "next_stop" : 10, "stop_type" : "", "a_time" : "08:29"}, 
+ {"bus_id" : 256, "stop_id" : 10, "stop_name" : "Lombard Street", "next_stop" : 12, "stop_type" : "", "a_time" : "08:44"}, 
+ {"bus_id" : 256, "stop_id" : 12, "stop_name" : "Sesame Street", "next_stop" : "", "stop_type" : "O", "a_time" : "08:46"}, 
+ {"bus_id" : 256, "stop_id" : 13, "stop_name" : 34.6, "next_stop" : 16, "stop_type" : "", "a_time" : "09:13"}, 
+ {"bus_id" : "eleven", "stop_id" : 16, "stop_name" : "Sunset Boullevard", "next_stop" : 17.4, "stop_type" : "O", "a_time" : "09:26"}, 
+ {"bus_id" : 256, "stop_id" : 17, "stop_name" : "Khao San Road", "next_stop" : 20, "stop_type" : "O", "a_time" : "10:25"}, 
+ {"bus_id" : 256, "stop_id" : 20, "stop_name" : "Michigan Avenue", "next_stop" : 0, "stop_type" : "F", "a_time" : "11:26"}, 
+ {"bus_id" : 512, "stop_id" : 6, "stop_name" : "Arlington Road", "next_stop" : 7, "stop_type" : "S", "a_time" : "11:06"}, 
+ {"bus_id" : 512, "stop_id" : 7, "stop_name" : "Parizska St.", "next_stop" : 8, "stop_type" : "", "a_time" : "11:15"}, 
+ {"bus_id" : 512, "stop_id" : 8, "stop_name" : "Elm Street", "next_stop" : 9, "stop_type" : "", "a_time" : "11:56"}, 
+ {"bus_id" : 512, "stop_id" : 9, "stop_name" : "Niebajka Av.", "next_stop" : 15, "stop_type" : "", "a_time" : "12:20"}, 
+ {"bus_id" : 512, "stop_id" : 15, "stop_name" : "Jakis Street", "next_stop" : 16, "stop_type" : "", "a_time" : "12:44"}, 
+ {"bus_id" : 512, "stop_id" : 16, "stop_name" : "Sunset Boulevard", "next_stop" : 18, "stop_type" : "", "a_time" : "13:01"}, 
+ {"bus_id" : 512, "stop_id" : 18, "stop_name" : "Jakas Avenue", "next_stop" : 19, "stop_type" : 3, "a_time" : "14:00"}, 
+ {"bus_id" : 1024, "stop_id" : "21", "stop_name" : "Karlikowska Avenue", "next_stop" : 12, "stop_type" : "S", "a_time" : 13.01}, 
+ {"bus_id" : 1024, "stop_id" : 12, "stop_name" : "Sesame Street", "next_stop" : 0, "stop_type" : "FF", "a_time" : ""}, 
+ {"bus_id" : "", "stop_id" : 19, "stop_name" : "Prospekt Avenue", "next_stop" : 0, "stop_type" : "F", "a_time" : "14:11"}
+]
+
+Expected values (18, 3, 3, 3, 3, 3, 3)
+"""
+
+#%%
